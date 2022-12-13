@@ -17,7 +17,7 @@
 package com.exactpro.th2.cradle.cache
 
 import com.exactpro.th2.cradle.cache.db.Arango
-import com.exactpro.th2.cradle.cache.entities.configuration.Configuration
+import com.exactpro.th2.cradle.cache.configuration.Configuration
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature

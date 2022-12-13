@@ -20,18 +20,20 @@ import com.exactpro.th2.cache.common.Arango
 import com.exactpro.th2.cache.common.Arango.Companion.MESSAGE_COLLECTION
 import com.exactpro.th2.cache.common.Arango.Companion.EVENT_COLLECTION
 import com.exactpro.th2.cache.common.Arango.Companion.EVENTS_GRAPH
+import com.exactpro.th2.cache.common.ArangoCredentials
 import com.exactpro.th2.cache.common.event.Event
 import com.exactpro.th2.cradle.cache.entities.exceptions.DataNotFoundException
 import java.util.function.Consumer
 
-class Arango : AutoCloseable {
+class Arango(credentials: ArangoCredentials) : AutoCloseable {
+    val arango: Arango = Arango(credentials)
 
     fun getMessage(messageId: String, probe: Boolean): String? {
         val query = """FOR message IN $MESSAGE_COLLECTION
             |FILTER message.id == "$messageId"
             |LIMIT 1
             |RETURN message""".trimMargin()
-        return executeAqlQuery(query, String::class.java)
+        return arango.executeAqlQuery(query, String::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Message not found by id: $messageId") }
             ?.first()
     }
@@ -41,7 +43,7 @@ class Arango : AutoCloseable {
             |FILTER message.id == "$messageId"
             |LIMIT 1
             |RETURN message.message""".trimMargin()
-        return executeAqlQuery(query, String::class.java)
+        return arango.executeAqlQuery(query, String::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Message not found by id: $messageId") }
             ?.first()
     }
@@ -50,7 +52,7 @@ class Arango : AutoCloseable {
         val query = """FOR message IN $MESSAGE_COLLECTION
             |RETURN FIRST(SPLIT(message.id, ":"))
             """.trimMargin()
-        return executeAqlQuery(query, String::class.java)
+        return arango.executeAqlQuery(query, String::class.java)
     }
 
     fun searchMessages(queryParametersMap: Map<String, List<String>>, sessions: List<String>, probe: Boolean, action: Consumer<String>) {
@@ -99,7 +101,7 @@ class Arango : AutoCloseable {
             |$limitStatement
             |RETURN message
             """.trimMargin()
-        executeAqlQuery(query, String::class.java, action)
+        arango.executeAqlQuery(query, String::class.java, action)
     }
 
     fun getEvent(eventId: String, probe: Boolean): Event? {
@@ -107,7 +109,7 @@ class Arango : AutoCloseable {
     FILTER doc.eventId == "$eventId"
     LIMIT 1
     RETURN doc"""
-        return executeAqlQuery(
+        return arango.executeAqlQuery(
             query,
             Event::class.java
         )
@@ -207,13 +209,13 @@ class Arango : AutoCloseable {
                |    RETURN doc""".trimMargin()
             }
         }
-        return executeAqlQuery(
+        return arango.executeAqlQuery(
             query,
             String::class.java
         ).ifEmpty { if (probe) null else throw DataNotFoundException("Event's children not found by id: $eventId and with specified query parameters") }
     }
 
     override fun close() {
-        Arango.close()
+        arango.close()
     }
 }

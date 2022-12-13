@@ -37,7 +37,7 @@ class HttpServer(private val appCtx: Context) {
     fun run() {
         embeddedServer(
             Netty,
-            port = cfg.port.value.toInt(),
+            port = cfg.port,
             configure = { responseWriteTimeoutSeconds = -1 }) {
 
             install(Compression)
@@ -52,6 +52,6 @@ class HttpServer(private val appCtx: Context) {
             configureRouting(appCtx.arango, appCtx)
         }.start(wait = false)
 
-        logger.info { "serving on: http://${cfg.hostname.value}:${cfg.port.value}" }
+        logger.info { "serving on: http://${cfg.hostname}:${cfg.port}" }
     }
 }

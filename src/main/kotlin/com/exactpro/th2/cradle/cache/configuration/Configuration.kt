@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package com.exactpro.th2.cradle.cache.entities.configuration
+package com.exactpro.th2.cradle.cache.configuration
+
+import com.exactpro.th2.cache.common.ArangoCredentials
 
 data class Configuration (
-    var hostname: String = "localhost",
-    var port: Int = 8080,
-    var responseTimeout: Int = 60000,
-    var checkRequestsAliveDelay: Long = 2000,
+    val hostname: String = "localhost",
+    val port: Int = 8080,
+    val responseTimeout: Int = 60000,
+    val checkRequestsAliveDelay: Long = 2000,
     val enableCaching: Boolean = true,
     val notModifiedObjectsLifetime: Int = 3600,
-    val rarelyModifiedObjects: Int = 500
+    val rarelyModifiedObjects: Int = 500,
+    val arangoCredentials: ArangoCredentials
 )

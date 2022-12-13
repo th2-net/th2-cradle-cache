@@ -20,7 +20,7 @@ import com.exactpro.th2.common.metrics.liveness
 import com.exactpro.th2.common.metrics.readiness
 import com.exactpro.th2.common.schema.factory.CommonFactory
 import com.exactpro.th2.cradle.cache.db.Arango
-import com.exactpro.th2.cradle.cache.entities.configuration.Configuration
+import com.exactpro.th2.cradle.cache.configuration.Configuration
 import com.exactpro.th2.cradle.cache.http.HttpServer
 import mu.KotlinLogging
 import java.util.*
@@ -44,9 +44,8 @@ class Main(args: Array<String>) {
         configureShutdownHook(resources, lock, condition)
         configurationFactory = CommonFactory.createFromArguments(*args)
         resources += configurationFactory
-        val configuration =
-            Configuration(configurationFactory.getCustomConfiguration(Configuration::class.java))
-        val arango = Arango()
+        val configuration = configurationFactory.getCustomConfiguration(Configuration::class.java)
+        val arango = Arango(configuration.arangoCredentials)
         resources += arango
         context = Context(
             configuration,
