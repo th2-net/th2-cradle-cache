@@ -36,7 +36,6 @@ data class ExceptionInfo(val exceptionName: String, val exceptionCause: String)
 
 data class SseEvent(val data: String = "empty data", val event: EventType? = null, val metadata: String? = null) {
     companion object {
-
         @InternalAPI
         suspend fun build(jacksonMapper: ObjectMapper, e: Exception): SseEvent {
             return SseEvent(
