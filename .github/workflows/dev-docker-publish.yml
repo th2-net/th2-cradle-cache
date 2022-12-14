@@ -29,7 +29,9 @@ jobs:
           properties: release_version
       - name: Build custom release version
         id: release_ver
-        run: echo value="${{ steps.ver.outputs.release_version }}-${{ steps.branch.outputs.branch_name }}" >> $GITHUB_OUTPUT
+        run: echo "${{ steps.ver.outputs.release_version }}" >> $GITHUB_OUTPUT
+      - name: Show branch name
+        run: echo ${{ steps.branch.outputs.value }}
       - name: Show custom release version
         run: echo ${{ steps.release_ver.outputs.value }}
       # Build and publish image
