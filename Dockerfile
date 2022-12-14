@@ -6,4 +6,4 @@ RUN gradle --no-daemon clean build dockerPrepare -Prelease_version=${release_ver
 FROM adoptopenjdk/openjdk11:alpine
 WORKDIR /home
 COPY --from=build /home/gradle/build/docker .
-ENTRYPOINT ["/home/service/bin/service", "run", "com.exactpro.th2.cradle.cache.MainKt"]
+ENTRYPOINT ["/home/service/bin/service"]
