@@ -17,9 +17,9 @@
 package com.exactpro.th2.cradle.cache.db
 
 import com.exactpro.th2.cache.common.Arango
-import com.exactpro.th2.cache.common.Arango.Companion.MESSAGE_COLLECTION
+import com.exactpro.th2.cache.common.Arango.Companion.PARSED_MESSAGE_COLLECTION
 import com.exactpro.th2.cache.common.Arango.Companion.EVENT_COLLECTION
-import com.exactpro.th2.cache.common.Arango.Companion.EVENTS_GRAPH
+import com.exactpro.th2.cache.common.Arango.Companion.EVENT_GRAPH
 import com.exactpro.th2.cache.common.ArangoCredentials
 import com.exactpro.th2.cache.common.event.Event
 import com.exactpro.th2.cradle.cache.entities.exceptions.DataNotFoundException
@@ -29,7 +29,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
     val arango: Arango = Arango(credentials)
 
     fun getMessage(messageId: String, probe: Boolean): String? {
-        val query = """FOR message IN $MESSAGE_COLLECTION
+        val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
             |FILTER message.id == "$messageId"
             |LIMIT 1
             |RETURN message""".trimMargin()
@@ -39,7 +39,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
     }
 
     fun getMessageBody(messageId: String, probe: Boolean): String? {
-        val query = """FOR message IN $MESSAGE_COLLECTION
+        val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
             |FILTER message.id == "$messageId"
             |LIMIT 1
             |RETURN message.message""".trimMargin()
@@ -49,7 +49,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
     }
 
     fun getMessageStreams(): List<String> {
-        val query = """FOR message IN $MESSAGE_COLLECTION
+        val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
             |RETURN FIRST(SPLIT(message.id, ":"))
             """.trimMargin()
         return arango.executeAqlQuery(query, String::class.java)
@@ -96,7 +96,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
 //        } TODO
         val filters = listOfNotNull(startTimestamp, endTimestamp, session)
         val filterStatement = filters.joinToString(" AND ")
-        val query = """FOR message IN $MESSAGE_COLLECTION
+        val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
             |FILTER $filterStatement
             |$limitStatement
             |RETURN message
@@ -177,7 +177,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                |FOR vertex
                |   IN 1..$searchDepth
                |   OUTBOUND eventNode
-               |   GRAPH $EVENTS_GRAPH
+               |   GRAPH $EVENT_GRAPH
                |   FILTER ${filterStatement("vertex")}
                |   $limitStr
                |   RETURN vertex.eventId""".trimMargin()
@@ -196,7 +196,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                |            IN 1..$searchDepth
                |            OUTBOUND K_PATHS
                |            id[0] TO doc._id
-               |            GRAPH $EVENTS_GRAPH
+               |            GRAPH $EVENT_GRAPH
                |            RETURN COUNT(path.vertices[*]) > 2 ? POP(SHIFT(path.vertices[*])) : SHIFT(path.vertices[*])
                |    )
                |LET result = (
