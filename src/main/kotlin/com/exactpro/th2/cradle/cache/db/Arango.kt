@@ -30,7 +30,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
 
     fun getMessage(messageId: String, probe: Boolean): String? {
         val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
-            |FILTER message.id == "$messageId"
+            |FILTER message._key == "$messageId"
             |LIMIT 1
             |RETURN message""".trimMargin()
         return arango.executeAqlQuery(query, String::class.java)
@@ -40,7 +40,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
 
     fun getMessageBody(messageId: String, probe: Boolean): String? {
         val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
-            |FILTER message.id == "$messageId"
+            |FILTER message._key == "$messageId"
             |LIMIT 1
             |RETURN message.message""".trimMargin()
         return arango.executeAqlQuery(query, String::class.java)
@@ -50,7 +50,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
 
     fun getMessageStreams(): List<String> {
         val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
-            |RETURN FIRST(SPLIT(message.id, ":"))
+            |RETURN FIRST(SPLIT(message._key, ":"))
             """.trimMargin()
         return arango.executeAqlQuery(query, String::class.java)
     }
@@ -106,7 +106,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
 
     fun getEvent(eventId: String, probe: Boolean): Event? {
         val query = """FOR doc IN $EVENT_COLLECTION
-    FILTER doc.eventId == "$eventId"
+    FILTER doc._key == "$eventId"
     LIMIT 1
     RETURN doc"""
         return arango.executeAqlQuery(
@@ -164,13 +164,13 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
             """FOR doc IN $EVENT_COLLECTION     
                |    FILTER doc.parentEventId == "" AND ${filterStatement("doc")}
                |    $limitStr
-               |    RETURN doc.eventId""".trimMargin()
+               |    RETURN doc._key""".trimMargin()
         } else {
             if (queryParametersMap["name-values"] == null && queryParametersMap["type-values"] == null) {
                 """LET eventNode = (
                |   FIRST(
                |       FOR doc IN $EVENT_COLLECTION
-               |           FILTER doc.eventId == "$eventId" 
+               |           FILTER doc._key == "$eventId" 
                |           RETURN doc
                |   )
                |)
@@ -180,11 +180,11 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                |   GRAPH $EVENT_GRAPH
                |   FILTER ${filterStatement("vertex")}
                |   $limitStr
-               |   RETURN vertex.eventId""".trimMargin()
+               |   RETURN vertex._key""".trimMargin()
             } else {
                 """LET id = (
                |   FOR doc IN $EVENT_COLLECTION
-               |       FILTER doc.eventId == "$eventId"
+               |       FILTER doc._key == "$eventId"
                |       LIMIT 1
                |       RETURN doc._id
                |    )
@@ -203,7 +203,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                |    FOR vertexArray IN vertexArrays
                |        FILTER COUNT(vertexArray) == 1 
                |            OR POP(vertexArray.vertices)[* FILTER ${filterStatement("CURRENT")}] NONE == true
-               |        RETURN vertexArray[*].eventId
+               |        RETURN vertexArray[*]._key
                |    )    
                |FOR doc IN FLATTEN(UNIQUE(result))
                |    RETURN doc""".trimMargin()
