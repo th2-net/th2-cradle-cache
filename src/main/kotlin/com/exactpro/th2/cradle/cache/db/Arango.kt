@@ -22,6 +22,7 @@ import com.exactpro.th2.cache.common.Arango.Companion.EVENT_COLLECTION
 import com.exactpro.th2.cache.common.Arango.Companion.EVENT_GRAPH
 import com.exactpro.th2.cache.common.ArangoCredentials
 import com.exactpro.th2.cache.common.event.Event
+import com.exactpro.th2.cache.common.event.EventResponse
 import com.exactpro.th2.cradle.cache.entities.exceptions.DataNotFoundException
 import java.util.function.Consumer
 
@@ -104,17 +105,14 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         arango.executeAqlQuery(query, String::class.java, action)
     }
 
-    fun getEvent(eventId: String, probe: Boolean): Event? {
+    fun getEvent(eventId: String, probe: Boolean): EventResponse? {
         val query = """FOR doc IN $EVENT_COLLECTION
-    FILTER doc._key == "$eventId"
-    LIMIT 1
-    RETURN doc"""
-        return arango.executeAqlQuery(
-            query,
-            Event::class.java
-        )
+            |FILTER doc._key == "$eventId"
+            |LIMIT 1
+            |RETURN doc""".trimMargin()
+        return arango.executeAqlQuery(query, Event::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Event not found by id: $eventId") }
-            ?.first()
+            ?.first()?.let { EventResponse(it) }
     }
 
     fun getEventChildren(queryParametersMap: Map<String, List<String>>, eventId: String?, offset: Long?, limit: Long?, searchDepth: Long, probe: Boolean): List<String>? {
