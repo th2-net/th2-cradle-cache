@@ -22,7 +22,7 @@ import com.exactpro.th2.cache.common.Arango.Companion.EVENT_COLLECTION
 import com.exactpro.th2.cache.common.Arango.Companion.EVENT_GRAPH
 import com.exactpro.th2.cache.common.ArangoCredentials
 import com.exactpro.th2.cache.common.event.Event
-import com.exactpro.th2.cache.common.event.EventResponse
+import com.exactpro.th2.cradle.cache.entities.response.event.EventResponse
 import com.exactpro.th2.cradle.cache.entities.exceptions.DataNotFoundException
 import java.util.function.Consumer
 
