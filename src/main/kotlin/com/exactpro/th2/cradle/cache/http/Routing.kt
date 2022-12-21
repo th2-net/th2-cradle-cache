@@ -62,11 +62,13 @@ fun Application.configureRouting(db: Arango, appCtx: Context) {
     val jacksonMapper = appCtx.jacksonMapper
 
     routing {
-        get("/event/{id}") {
-            val eventId = call.parameters.getOrFail("id")
+        get("/event/{book}/{scope}/{id}") {
+            val book = call.parameters.getOrFail("book")
+            val scope = call.parameters.getOrFail("scope")
+            val id = call.parameters.getOrFail("id")
             val probe = call.parameters["probe"]?.toBoolean() ?: false
             // If probe=true then do not throw errors for empty result
-            handleRestApiRequest(call, context, notModifiedCacheControl) { db.getEvent(eventId, probe) }
+            handleRestApiRequest(call, context, notModifiedCacheControl) { db.getEvent(book, scope, id, probe) }
         }
         get("/eventChildren") {
             val queryParametersMap = call.request.queryParameters.toMap()

@@ -105,13 +105,13 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         arango.executeAqlQuery(query, String::class.java, action)
     }
 
-    fun getEvent(eventId: String, probe: Boolean): EventResponse? {
+    fun getEvent(book: String, scope: String, id: String, probe: Boolean): EventResponse? {
         val query = """FOR doc IN $EVENT_COLLECTION
-            |FILTER doc._key == "$eventId"
+            |FILTER doc.book == "$book" AND doc.scope == "$scope" AND doc.id == "$id"
             |LIMIT 1
             |RETURN doc""".trimMargin()
         return arango.executeAqlQuery(query, Event::class.java)
-            .ifEmpty { if (probe) null else throw DataNotFoundException("Event not found by id: $eventId") }
+            .ifEmpty { if (probe) null else throw DataNotFoundException("Event not found by id: $id") }
             ?.first()?.let { EventResponse(it) }
     }
 
