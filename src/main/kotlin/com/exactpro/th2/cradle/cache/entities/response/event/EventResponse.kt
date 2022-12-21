@@ -22,6 +22,9 @@ import java.time.Instant
 
 data class EventResponse(
     val eventId: String,
+    val book: String,
+    val scope: String,
+    val id: String,
     val batchId: String?,
     val isBatched: Boolean,
     val eventName: String,
@@ -33,7 +36,7 @@ data class EventResponse(
     val attachedMessageIds: Set<String>?,
     val body: String?
 ) {
-    constructor(event: Event) : this(event.eventId, event.batchId, event.isBatched, event.eventName, event.eventType,
-        toInstant(event.startTimestamp), event.endTimestamp?.let { toInstant(it) }, event.parentEventId,
-        event.successful, event.attachedMessageIds, event.body)
+    constructor(event: Event) : this(event.eventId, event.book, event.scope, event.id, event.batchId, event.isBatched,
+        event.eventName, event.eventType, toInstant(event.startTimestamp), event.endTimestamp?.let { toInstant(it) },
+        event.parentEventId, event.successful, event.attachedMessageIds, event.body)
 }
