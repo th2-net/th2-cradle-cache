@@ -19,9 +19,11 @@ Every route accepts boolean `probe` parameter, if set to `true` then exception w
 
 `http://localhost:8080/eventChildren` - returns children of an event with specified id. Accepts following query parameters (additoinally, supports Filters API below):
 - `id` - text, id of the event. If not specified, events without parent and satisfying remaining filters will be returned.
-- `offset` 
-- `limit`
-- `search-depth`
+- `offset` - number, first `offset` number of elements satisfying filters will be ignored.
+- `limit` - number, maximum returned events.
+- `search-depth` - number, maximum depth of search starting from the root node. defaults to `1`.
+- `name` - will match the events which name contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative` - boolean, `conjunct` - boolean.  
+- `type` - will match the events which type contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative` - boolean, `conjunct` - boolean.  
 
 ### SSE
 
@@ -35,10 +37,6 @@ Filters are formed as follows:
 - `value / values` - text, number, boolean, etc. - one / many values to match against a filter.
 - `negative` - boolean. - Negates the result of the filter. To retrieve data that does NOT match the specified filter. Defaults to `false`.
 - `conjunct` - boolean. - Used if the filter takes several values. If `true` then the element must match ALL given `values`. If `false` then element must match ANY of `values`. *Not used in filters with one possible value*. Defaults to `false`.
-
-[FILTERS](#filters-api):
-- `name` - Will match the events which name contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative` - boolean, `conjunct` - boolean.  
-- `type` - Will match the events which type contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative` - boolean, `conjunct` - boolean.  
 
 ##### SSE requests API
 
