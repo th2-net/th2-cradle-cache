@@ -24,6 +24,7 @@ import com.exactpro.th2.cache.common.ArangoCredentials
 import com.exactpro.th2.cache.common.event.Event
 import com.exactpro.th2.cradle.cache.entities.response.event.EventResponse
 import com.exactpro.th2.cradle.cache.entities.exceptions.DataNotFoundException
+import com.exactpro.th2.cradle.cache.entities.exceptions.InvalidRequestException
 import java.util.function.Consumer
 
 class Arango(credentials: ArangoCredentials) : AutoCloseable {
@@ -117,18 +118,31 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
 
     fun getEventChildren(queryParametersMap: Map<String, List<String>>, eventId: String?, offset: Long?, limit: Long?, searchDepth: Long, probe: Boolean): List<String>? {
         val searchDirection = queryParametersMap["search-direction"]?.get(0)?.let {
-            if (it == "prev") {
-                "DESC"
+            if (queryParametersMap["start-timestamp"] == null) {
+                throw InvalidRequestException("start-timestamp should be specified in order to use search-direction")
             }
-        } ?: "ASC"
+            when (it) {
+                "next" -> "ASC"
+                "prev" -> "DESC"
+                else -> throw InvalidRequestException("search-direction should be either next or prev")
+            }
+        }
         val startTimestamp: (String) -> String? = { variableName->
             queryParametersMap["start-timestamp"]?.get(0)?.let {
-                "$variableName.startTimestamp >= $it"
+                if (searchDirection == "ASC")
+                    "$variableName.startTimestamp >= $it"
+                else {
+                    "$variableName.startTimestamp <= $it"
+                }
             }
         }
         val endTimestamp: (String) -> String? = { variableName ->
             queryParametersMap["end-timestamp"]?.get(0)?.let {
-                "$variableName.startTimestamp <= $it"
+                if (searchDirection == "ASC") {
+                    "$variableName.startTimestamp <= $it"
+                } else {
+                    "$variableName.startTimestamp >= $it"
+                }
             }
         }
         val nameNegative = queryParametersMap["name-negative"]?.get(0)?.let {
