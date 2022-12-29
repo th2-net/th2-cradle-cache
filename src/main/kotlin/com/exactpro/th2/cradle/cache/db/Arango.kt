@@ -116,6 +116,16 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
     }
 
     fun getEventChildren(queryParametersMap: Map<String, List<String>>, eventId: String?, offset: Long?, limit: Long?, searchDepth: Long, probe: Boolean): List<String>? {
+        val startTimestamp: (String) -> String? = { variableName->
+            queryParametersMap["start-timestamp"]?.get(0)?.let {
+                "$variableName.startTimestamp >= $it"
+            }
+        }
+        val endTimestamp: (String) -> String? = { variableName ->
+            queryParametersMap["end-timestamp"]?.get(0)?.let {
+                "$variableName.timestamp <= $it"
+            }
+        }
         val nameNegative = queryParametersMap["name-negative"]?.get(0)?.let {
             if (it == "true") "NOT" else ""
         } ?: ""
@@ -144,8 +154,9 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                 "($typeNegative ${typesList.joinToString(typeConjunct) { if (typeStrict) "$variableName.eventType == $it" else "CONTAINS($variableName.eventType, \"$it\")" }})"
             }
         }
-        val filters: (String) -> List<String> =
-            { variableName -> listOfNotNull(nameValues(variableName), typeValues(variableName)) }
+        val filters: (String) -> List<String> = { variableName ->
+            listOfNotNull(nameValues(variableName), typeValues(variableName), startTimestamp(variableName), endTimestamp(variableName))
+        }
         val filterStatement: (String) -> String = { variableName ->
             val filtersJoined = filters(variableName).joinToString(" AND ")
             if (filtersJoined == "") {
