@@ -116,6 +116,11 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
     }
 
     fun getEventChildren(queryParametersMap: Map<String, List<String>>, eventId: String?, offset: Long?, limit: Long?, searchDepth: Long, probe: Boolean): List<String>? {
+        val searchDirection = queryParametersMap["search-direction"]?.get(0)?.let {
+            if (it == "prev") {
+                "DESC"
+            }
+        } ?: "ASC"
         val startTimestamp: (String) -> String? = { variableName->
             queryParametersMap["start-timestamp"]?.get(0)?.let {
                 "$variableName.startTimestamp >= $it"
@@ -165,14 +170,18 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                 filtersJoined
             }
         }
-        val limitStr =
+        val limitStatement =
             if (limit != null)
                 if (offset != null) "LIMIT $offset, $limit" else "LIMIT $limit"
             else ""
+        val sortStatement: (String) -> String = { variableName ->
+            "SORT $variableName.startTimestamp $searchDirection"
+        }
         val query = if (eventId == null) {
             """FOR doc IN $EVENT_COLLECTION     
                |    FILTER doc.parentEventId == "" AND ${filterStatement("doc")}
-               |    $limitStr
+               |    $limitStatement
+               |    ${sortStatement("doc")}
                |    RETURN doc._key""".trimMargin()
         } else {
             if (queryParametersMap["name-values"] == null && queryParametersMap["type-values"] == null) {
@@ -188,7 +197,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                |   OUTBOUND eventNode
                |   GRAPH $EVENT_GRAPH
                |   FILTER ${filterStatement("vertex")}
-               |   $limitStr
+               |   $limitStatement
                |   RETURN vertex._key""".trimMargin()
             } else {
                 """LET id = (
@@ -200,7 +209,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                |LET vertexArrays = (
                |    FOR doc IN $EVENT_COLLECTION
                |        FILTER ${filterStatement("doc")}
-               |        $limitStr
+               |        $limitStatement
                |        FOR path
                |            IN 1..$searchDepth
                |            OUTBOUND K_PATHS
@@ -215,6 +224,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                |        RETURN vertexArray[*]._key
                |    )    
                |FOR doc IN FLATTEN(UNIQUE(result))
+               |    ${sortStatement("doc")}
                |    RETURN doc""".trimMargin()
             }
         }
