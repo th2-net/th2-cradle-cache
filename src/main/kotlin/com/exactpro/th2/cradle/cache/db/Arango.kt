@@ -123,7 +123,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         }
         val endTimestamp: (String) -> String? = { variableName ->
             queryParametersMap["end-timestamp"]?.get(0)?.let {
-                "$variableName.timestamp <= $it"
+                "$variableName.startTimestamp <= $it"
             }
         }
         val nameNegative = queryParametersMap["name-negative"]?.get(0)?.let {
