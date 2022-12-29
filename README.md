@@ -22,9 +22,9 @@ Every route accepts boolean `probe` parameter, if set to `true` then exception w
 - `offset` - number, first `offset` number of elements satisfying filters will be ignored.
 - `limit` - number, maximum returned events.
 - `search-depth` - number, maximum depth of search starting from the root node. defaults to `1`.
-Filters:
-- `name` - will match the events which name contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative` - boolean, `conjunct` - boolean.  
-- `type` - will match the events which type contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative` - boolean, `conjunct` - boolean.  
+- filters:
+  - `name` - will match the events which name contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
+  - `type` - will match the events which type contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
 
 ### SSE
 
@@ -45,8 +45,8 @@ Filters are formed as follows:
 - `page-size` - number, size of the page. 
 - `page-number` - number, count of pages.
 - `search-direction` - `next`/`previous` - Sets the lookup direction. Can be used for pagination. Defaults to `next`.
-Filters:
-- `start-timestamp` - number, unix timestamp in milliseconds - Sets the search starting point. 
-- `stream` - text, accepts multiple values - Sets the stream ids to search in. Case-sensitive. **Required**. 
-- `end-timestamp` - number, unix timestamp in milliseconds - Sets the timestamp to which the search will be performed, starting with `start-timestamp`. When `search-direction` is `previous`, `end-timestamp` must be less then `start-timestamp`. Defaults to `null` (the search is carried out endlessly into the past or the future).
+- filters:
+  - `start-timestamp` - number, unix timestamp in milliseconds - Sets the search starting point. 
+  - `stream` - text, accepts multiple values - Sets the stream ids to search in. Case-sensitive. **Required**. 
+  - `end-timestamp` - number, unix timestamp in milliseconds - Sets the timestamp to which the search will be performed, starting with `start-timestamp`. When `search-     direction` is `previous`, `end-timestamp` must be less then `start-timestamp`. Defaults to `null` (the search is carried out endlessly into the past or the future).
 
