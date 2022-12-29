@@ -48,5 +48,5 @@ Filters are formed as follows:
 - filters:
   - `start-timestamp` - number, unix timestamp in milliseconds - Sets the search starting point. 
   - `stream` - text, accepts multiple values - Sets the stream ids to search in. Case-sensitive. **Required**. 
-  - `end-timestamp` - number, unix timestamp in milliseconds - Sets the timestamp to which the search will be performed, starting with `start-timestamp`. When `search-     direction` is `previous`, `end-timestamp` must be less then `start-timestamp`. Defaults to `null` (the search is carried out endlessly into the past or the future).
+  - `end-timestamp` - number, unix timestamp in milliseconds - Sets the timestamp to which the search will be performed, starting with `start-timestamp`. When `search-direction` is `previous`, `end-timestamp` must be less then `start-timestamp`. Defaults to `null` (the search is carried out endlessly into the past or the future).
 
