@@ -129,19 +129,19 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         }
         val startTimestamp: (String) -> String? = { variableName->
             queryParametersMap["start-timestamp"]?.get(0)?.let {
-                if (searchDirection == "ASC")
-                    "$variableName.startTimestamp >= $it"
-                else {
+                if (searchDirection == "DESC") {
                     "$variableName.startTimestamp <= $it"
+                } else {
+                    "$variableName.startTimestamp >= $it"
                 }
             }
         }
         val endTimestamp: (String) -> String? = { variableName ->
             queryParametersMap["end-timestamp"]?.get(0)?.let {
-                if (searchDirection == "ASC") {
-                    "$variableName.startTimestamp <= $it"
-                } else {
+                if (searchDirection == "DESC") {
                     "$variableName.startTimestamp >= $it"
+                } else {
+                    "$variableName.startTimestamp <= $it"
                 }
             }
         }
