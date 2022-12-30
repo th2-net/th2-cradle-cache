@@ -212,6 +212,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
                |   GRAPH $EVENT_GRAPH
                |   FILTER ${filterStatement("vertex")}
                |   $limitStatement
+               |   ${sortStatement("vertex")}
                |   RETURN vertex._key""".trimMargin()
             } else {
                 """LET id = (
