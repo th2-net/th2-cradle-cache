@@ -105,6 +105,15 @@ fun Application.configureRouting(db: Arango, appCtx: Context) {
             val probe = call.parameters["probe"]?.toBoolean() ?: false
             handleRestApiRequest(call, context, rarelyModifiedCacheControl) { db.getMessageBody(messageId, probe) }
         }
+        get("/events/{book}") {
+            val queryParametersMap = call.request.queryParameters.toMap()
+            val book = call.parameters.getOrFail("book")
+            val limit = call.parameters["limit"]?.toLong()
+            val probe = call.parameters["probe"]?.toBoolean() ?: false
+            handleRestApiRequest(call, context, rarelyModifiedCacheControl) {
+                db.searchEvents(book, queryParametersMap, limit, probe)
+            }
+        }
     }
 }
 

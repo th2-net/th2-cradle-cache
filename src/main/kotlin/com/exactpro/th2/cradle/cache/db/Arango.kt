@@ -106,6 +106,36 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         arango.executeAqlQuery(query, String::class.java, action)
     }
 
+    fun searchEvents(book: String, queryParametersMap: Map<String, List<String>>, limit: Long?, probe: Boolean): List<EventResponse>? {
+        // TODO: add filtering on attachedMessageIds
+        val bookFilter = "event.book == $book"
+        val parentId = queryParametersMap["parent-id"]?.get(0)?.let {
+            "event.parentEventId == $it"
+        }
+        val type = queryParametersMap["type"]?.get(0)?.let {
+            "event.eventType == $it"
+        }
+        val name = queryParametersMap["name"]?.get(0)?.let {
+            "event.eventName == $it"
+        }
+        val body = queryParametersMap["body"]?.get(0)?.let {
+            "event.body == $it"
+        }
+        val status = queryParametersMap["status"]?.get(0)?.let {
+            "event.successful == $it"
+        }
+        val filters = listOfNotNull(bookFilter, parentId, type, name, body, status)
+        val filterStatement = filters.joinToString(" AND ")
+        val limitStatement = if (limit == null) "" else "LIMIT $limit"
+        val query = """FOR event IN $EVENT_COLLECTION
+            |FILTER $filterStatement
+            |$limitStatement
+            |RETURN event""".trimMargin()
+        return arango.executeAqlQuery(query, Event::class.java)
+            .ifEmpty { if (probe) null else throw DataNotFoundException("Events not found by specified parameters") }
+            ?.map { EventResponse(it) }
+    }
+
     fun getEvent(book: String, scope: String, id: String, probe: Boolean): EventResponse? {
         val query = """FOR doc IN $EVENT_COLLECTION
             |FILTER doc.book == "$book" AND doc.scope == "$scope" AND doc.id == "$id"
