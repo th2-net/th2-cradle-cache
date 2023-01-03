@@ -112,19 +112,37 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         val parentId = queryParametersMap["parent-id"]?.get(0)?.let {
             "event.parentEventId == $it"
         }
-        val type = queryParametersMap["type"]?.get(0)?.let {
-            "event.eventType == $it"
-        }
-        val name = queryParametersMap["name"]?.get(0)?.let {
-            "event.eventName == $it"
-        }
         val body = queryParametersMap["body"]?.get(0)?.let {
             "event.body == $it"
         }
         val status = queryParametersMap["status"]?.get(0)?.let {
             "event.successful == $it"
         }
-        val filters = listOfNotNull(bookFilter, parentId, type, name, body, status)
+        val nameNegative = queryParametersMap["name-negative"]?.get(0)?.let {
+            if (it == "true") "NOT" else ""
+        } ?: ""
+        val nameConjunct = queryParametersMap["name-conjunct"]?.get(0)?.let {
+            if (it == "true") " AND " else " OR "
+        } ?: " OR "
+        val nameStrict = queryParametersMap["name-strict"]?.get(0)?.let {
+            it == "true"
+        } ?: false
+        val nameValues = queryParametersMap["name-values"]?.let { namesList ->
+            "($nameNegative ${namesList.joinToString(nameConjunct) { if (nameStrict) "event.eventName == $it" else "CONTAINS(event.eventName, \"$it\")" }})"
+        }
+        val typeNegative = queryParametersMap["type-negative"]?.get(0)?.let {
+            if (it == "true") "NOT" else ""
+        } ?: ""
+        val typeConjunct = queryParametersMap["type-conjunct"]?.get(0)?.let {
+            if (it == "true") " AND " else " OR "
+        } ?: " OR "
+        val typeStrict = queryParametersMap["type-strict"]?.get(0)?.let {
+            it == "true"
+        } ?: false
+        val typeValues = queryParametersMap["type-values"]?.let { typesList ->
+            "($typeNegative ${typesList.joinToString(typeConjunct) { if (typeStrict) "event.eventName == $it" else "CONTAINS(event.eventName, \"$it\")" }})"
+        }
+        val filters = listOfNotNull(bookFilter, parentId, nameValues, typeValues, body, status)
         val filterStatement = filters.joinToString(" AND ")
         val limitStatement = if (limit == null) "" else "LIMIT $limit"
         val query = """FOR event IN $EVENT_COLLECTION
