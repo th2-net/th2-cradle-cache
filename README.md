@@ -23,9 +23,9 @@ Every route accepts boolean `probe` parameter, if set to `true` then exception w
 - filters:
   - `name` - will match the events which name contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
   - `type` - will match the events which type contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
-  - `parentId` - string. 
-  - `body` - string.
-  - `status` - boolean.
+  - `parentId` - string. will match those events whose parentId is equal to given value.
+  - `body` - string. will match those events whose body is equal to given value.
+  - `status` - boolean. will match those events whose status is equal to given value.
 
 `http://localhost:8080/eventChildren` - returns children of an event with specified id. Accepts following query parameters (additoinally, supports Filters API below):
 - `id` - text, id of the event. If not specified, events without parent and satisfying remaining filters will be returned.
