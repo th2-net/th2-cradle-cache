@@ -110,10 +110,10 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         // TODO: add filtering on attachedMessageIds
         val bookFilter = "event.book == $book"
         val parentId = queryParametersMap["parent-id"]?.get(0)?.let {
-            "event.parentEventId == $it"
+            "event.parentEventId == \"$it\""
         }
         val body = queryParametersMap["body"]?.get(0)?.let {
-            "event.body == $it"
+            "event.body == \"$it\""
         }
         val status = queryParametersMap["status"]?.get(0)?.let {
             "event.successful == $it"
@@ -128,7 +128,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
             it == "true"
         } ?: false
         val nameValues = queryParametersMap["name-values"]?.let { namesList ->
-            "($nameNegative ${namesList.joinToString(nameConjunct) { if (nameStrict) "event.eventName == $it" else "CONTAINS(event.eventName, \"$it\")" }})"
+            "($nameNegative ${namesList.joinToString(nameConjunct) { if (nameStrict) "event.eventName == \"$it\"" else "CONTAINS(event.eventName, \"$it\")" }})"
         }
         val typeNegative = queryParametersMap["type-negative"]?.get(0)?.let {
             if (it == "true") "NOT" else ""
@@ -140,7 +140,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
             it == "true"
         } ?: false
         val typeValues = queryParametersMap["type-values"]?.let { typesList ->
-            "($typeNegative ${typesList.joinToString(typeConjunct) { if (typeStrict) "event.eventName == $it" else "CONTAINS(event.eventName, \"$it\")" }})"
+            "($typeNegative ${typesList.joinToString(typeConjunct) { if (typeStrict) "event.eventName == \"$it\"" else "CONTAINS(event.eventName, \"$it\")" }})"
         }
         val filters = listOfNotNull(bookFilter, parentId, nameValues, typeValues, body, status)
         val filterStatement = filters.joinToString(" AND ")
@@ -204,7 +204,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         } ?: false
         val nameValues: (String) -> String? = { variableName ->
             queryParametersMap["name-values"]?.let { namesList ->
-                "($nameNegative ${namesList.joinToString(nameConjunct) { if (nameStrict) "$variableName.eventName == $it" else "CONTAINS($variableName.eventName, \"$it\")" }})"
+                "($nameNegative ${namesList.joinToString(nameConjunct) { if (nameStrict) "$variableName.eventName == \"$it\"" else "CONTAINS($variableName.eventName, \"$it\")" }})"
             }
         }
         val typeNegative = queryParametersMap["type-negative"]?.get(0)?.let {
@@ -218,7 +218,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         } ?: false
         val typeValues: (String) -> String? = { variableName ->
             queryParametersMap["type-values"]?.let { typesList ->
-                "($typeNegative ${typesList.joinToString(typeConjunct) { if (typeStrict) "$variableName.eventType == $it" else "CONTAINS($variableName.eventType, \"$it\")" }})"
+                "($typeNegative ${typesList.joinToString(typeConjunct) { if (typeStrict) "$variableName.eventType == \"$it\"" else "CONTAINS($variableName.eventType, \"$it\")" }})"
             }
         }
         val filters: (String) -> List<String> = { variableName ->
