@@ -17,10 +17,20 @@ Every route accepts boolean `probe` parameter, if set to `true` then exception w
 
 `http://localhost:8080/messageStream` - returns a list of message stream names.
 
+`http://localhost:8080/events/{book}` - return a list of events that matches the filter.
+- `book` - text, book of the event.
+- `limit` - number, maximum returned events. If not specified, every event that matches will be returned.
+- filters:
+  - `name` - will match the events which name contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
+  - `type` - will match the events which type contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
+  - `parentId` - string. 
+  - `body` - string.
+  - `status` - boolean.
+
 `http://localhost:8080/eventChildren` - returns children of an event with specified id. Accepts following query parameters (additoinally, supports Filters API below):
 - `id` - text, id of the event. If not specified, events without parent and satisfying remaining filters will be returned.
 - `offset` - number, first `offset` number of elements satisfying filters will be ignored.
-- `limit` - number, maximum returned events.
+- `limit` - number, maximum returned events. If not specified, every event that matches will be returned.
 - `search-depth` - number, maximum depth of search starting from the root node. defaults to `1`.
 - filters:
   - `name` - will match the events which name contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
