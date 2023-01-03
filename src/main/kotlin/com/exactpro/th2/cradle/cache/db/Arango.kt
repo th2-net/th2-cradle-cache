@@ -109,6 +109,30 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
     fun searchEvents(book: String, queryParametersMap: Map<String, List<String>>, limit: Long?, probe: Boolean): List<EventResponse>? {
         // TODO: add filtering on attachedMessageIds
         val bookFilter = "event.book == \"$book\""
+        val searchDirection = queryParametersMap["search-direction"]?.get(0)?.let {
+            if (queryParametersMap["start-timestamp"] == null) {
+                throw InvalidRequestException("start-timestamp should be specified in order to use search-direction")
+            }
+            when (it) {
+                "next" -> "ASC"
+                "prev" -> "DESC"
+                else -> throw InvalidRequestException("search-direction should be either next or prev")
+            }
+        }
+        val startTimestamp = queryParametersMap["start-timestamp"]?.get(0)?.let {
+                if (searchDirection == "DESC") {
+                    "event.startTimestamp <= $it"
+                } else {
+                    "event.startTimestamp >= $it"
+                }
+            }
+        val endTimestamp = queryParametersMap["end-timestamp"]?.get(0)?.let {
+                if (searchDirection == "DESC") {
+                    "event.startTimestamp >= $it"
+                } else {
+                    "event.startTimestamp <= $it"
+                }
+            }
         val parentId = queryParametersMap["parent-id"]?.get(0)?.let {
             "event.parentEventId == \"$it\""
         }
@@ -142,12 +166,14 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         val typeValues = queryParametersMap["type-values"]?.let { typesList ->
             "($typeNegative ${typesList.joinToString(typeConjunct) { if (typeStrict) "event.eventName == \"$it\"" else "CONTAINS(event.eventName, \"$it\")" }})"
         }
-        val filters = listOfNotNull(bookFilter, parentId, nameValues, typeValues, body, status)
+        val filters = listOfNotNull(bookFilter, startTimestamp, endTimestamp, parentId, nameValues, typeValues, body, status)
         val filterStatement = filters.joinToString(" AND ")
         val limitStatement = if (limit == null) "" else "LIMIT $limit"
+        val sortStatement = "SORT event.startTimestamp $searchDirection"
         val query = """FOR event IN $EVENT_COLLECTION
             |FILTER $filterStatement
             |$limitStatement
+            |$sortStatement
             |RETURN event""".trimMargin()
         return arango.executeAqlQuery(query, Event::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Events not found by specified parameters") }
