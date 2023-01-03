@@ -108,7 +108,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
 
     fun searchEvents(book: String, queryParametersMap: Map<String, List<String>>, limit: Long?, probe: Boolean): List<EventResponse>? {
         // TODO: add filtering on attachedMessageIds
-        val bookFilter = "event.book == $book"
+        val bookFilter = "event.book == \"$book\""
         val parentId = queryParametersMap["parent-id"]?.get(0)?.let {
             "event.parentEventId == \"$it\""
         }
