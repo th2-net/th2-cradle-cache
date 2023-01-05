@@ -25,6 +25,7 @@ import com.exactpro.th2.cache.common.event.Event
 import com.exactpro.th2.cradle.cache.entities.response.event.EventResponse
 import com.exactpro.th2.cradle.cache.entities.exceptions.DataNotFoundException
 import com.exactpro.th2.cradle.cache.entities.exceptions.InvalidRequestException
+import com.google.common.graph.Graph
 import java.util.function.Consumer
 
 class Arango(credentials: ArangoCredentials) : AutoCloseable {
@@ -106,9 +107,10 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         arango.executeAqlQuery(query, String::class.java, action)
     }
 
-    fun searchEvents(book: String, queryParametersMap: Map<String, List<String>>, limit: Long?, probe: Boolean): List<EventResponse>? {
+    fun searchEvents(book: String, scope: String, queryParametersMap: Map<String, List<String>>, limit: Long?, probe: Boolean): List<EventResponse>? {
         // TODO: add filtering on attachedMessageIds
         val bookFilter = "event.book == \"$book\""
+        val scopeFilter = "event.scope == \"$scope\""
         val searchDirection = queryParametersMap["search-direction"]?.get(0)?.let {
             if (queryParametersMap["start-timestamp"] == null) {
                 throw InvalidRequestException("start-timestamp should be specified in order to use search-direction")
@@ -166,7 +168,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         val typeValues = queryParametersMap["type-values"]?.let { typesList ->
             "($typeNegative ${typesList.joinToString(typeConjunct) { if (typeStrict) "event.eventName == \"$it\"" else "CONTAINS(event.eventName, \"$it\")" }})"
         }
-        val filters = listOfNotNull(bookFilter, startTimestamp, endTimestamp, parentId, nameValues, typeValues, body, status)
+        val filters = listOfNotNull(bookFilter, scopeFilter, startTimestamp, endTimestamp, parentId, nameValues, typeValues, body, status)
         val filterStatement = filters.joinToString(" AND ")
         val limitStatement = if (limit == null) "" else "LIMIT $limit"
         val sortStatement = "SORT event.startTimestamp $searchDirection"
@@ -188,6 +190,42 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         return arango.executeAqlQuery(query, Event::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Event not found by id: $id") }
             ?.first()?.let { EventResponse(it) }
+    }
+
+    fun getEventParents(book: String, scope: String, queryParametersMap: Map<String, List<String>>, probe: Boolean): List<EventResponse>? {
+        val maxDepth = 100
+        val bookFilter = "event.book == \"$book\""
+        val scopeFilter = "event.scope == \"$scope\""
+        val startTimestamp = queryParametersMap["start-timestamp"]?.get(0)?.let {
+            "event.startTimestamp >= $it"
+        }
+        val endTimestamp = queryParametersMap["end-timestamp"]?.get(0)?.let {
+            "event.startTimestamp <= $it"
+        }
+        val filters = listOfNotNull(bookFilter, scopeFilter, startTimestamp, endTimestamp)
+        val filterStatement = filters.joinToString(" AND ")
+        val query = """LET filteredEvents = (
+            |FOR event IN $EVENT_COLLECTION
+            |   FILTER $filterStatement
+            |   RETURN event
+            |)
+            |LET traversal = (
+            |FOR event IN filteredEvents
+            |   LET results = []
+            |   FOR vertex
+            |       IN 0..$maxDepth
+            |       INBOUND event
+            |       GRAPH $EVENT_GRAPH
+            |       PRUNE vertex.eventParentId == ""
+            |       COLLECT r = event._key INTO results = vertex._key
+            |       RETURN results
+            |)
+            |FOR resultArray IN traversal
+            |   RETURN DISTINCT(resultArray[-1])
+            |""".trimMargin()
+        return arango.executeAqlQuery(query, Event::class.java)
+            .ifEmpty { if (probe) null else throw DataNotFoundException("Events not found by specified parameters") }
+            ?.map { EventResponse(it) }
     }
 
     fun getEventChildren(queryParametersMap: Map<String, List<String>>, eventId: String?, offset: Long?, limit: Long?, searchDepth: Long, probe: Boolean): List<String>? {
