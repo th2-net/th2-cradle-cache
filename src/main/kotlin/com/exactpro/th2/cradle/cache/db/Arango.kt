@@ -203,25 +203,16 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         }
         val filters = listOfNotNull(bookFilter, scopeFilter, startTimestamp, endTimestamp)
         val filterStatement = filters.joinToString(" AND ")
-        val query = """LET filteredEvents = (
+        val query = """
             |FOR event IN $EVENT_COLLECTION
             |   FILTER $filterStatement
-            |   RETURN event
-            |)
-            |LET traversal = (
-            |FOR event IN filteredEvents
             |   LET results = []
             |   FOR vertex
             |       IN 0..$maxDepth
             |       INBOUND event
             |       GRAPH $EVENT_GRAPH
-            |       PRUNE vertex.eventParentId == ""
             |       COLLECT r = event._key INTO results = vertex._key
-            |       RETURN results
-            |)
-            |FOR resultArray IN traversal
-            |   RETURN DISTINCT(resultArray[-1])
-            |""".trimMargin()
+            |       RETURN DISTINCT(results[-1])""".trimMargin()
         return arango.executeAqlQuery(query, Event::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Events not found by specified parameters") }
             ?.map { EventResponse(it) }
