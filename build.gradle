@@ -35,7 +35,7 @@ dependencies {
 
     api platform('com.exactpro.th2:bom:4.0.2')
 
-    implementation 'com.exactpro.th2:cache-common:0.0.1-new-model-3749838241-d3a8942-SNAPSHOT'
+    implementation 'com.exactpro.th2:cache-common:0.0.1-new-model-3854943468-40af69b-SNAPSHOT'
     implementation 'com.exactpro.th2:common:3.39.0'
     implementation "com.exactpro.th2:cradle-core:${cradleVersion}"
 

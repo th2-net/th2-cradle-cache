@@ -191,7 +191,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
             ?.first()?.let { EventResponse(it) }
     }
 
-    fun getEventParents(book: String, scope: String, queryParametersMap: Map<String, List<String>>, probe: Boolean): List<EventResponse>? {
+    fun getEventParents(book: String, scope: String, queryParametersMap: Map<String, List<String>>, probe: Boolean): List<EventResponse?>? {
         val maxDepth = 100
         val bookFilter = "event.book == \"$book\""
         val scopeFilter = "event.scope == \"$scope\""
@@ -211,11 +211,11 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
             |       IN 0..$maxDepth
             |       INBOUND event
             |       GRAPH $EVENT_GRAPH
-            |       COLLECT r = event._key INTO results = vertex._key
+            |       COLLECT r = event._key INTO results = vertex
             |       RETURN DISTINCT(results[-1])""".trimMargin()
         return arango.executeAqlQuery(query, Event::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Events not found by specified parameters") }
-            ?.map { EventResponse(it) }
+            ?.map { if (it == null) null else EventResponse(it) }
     }
 
     fun getEventChildren(queryParametersMap: Map<String, List<String>>, eventId: String?, offset: Long?, limit: Long?, searchDepth: Long, probe: Boolean): List<String>? {
