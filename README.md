@@ -17,8 +17,9 @@ Every route accepts boolean `probe` parameter, if set to `true` then exception w
 
 `http://localhost:8080/messageStream` - returns a list of message stream names.
 
-`http://localhost:8080/events/{book}` - return a list of events that matches the filter.
+`http://localhost:8080/events/{book}/{scope}` - return a list of events that matches the filter.
 - `book` - text, book of the event.
+- `scope` - text, scope of the event.
 - `limit` - number, maximum returned events. If not specified, every event that matches will be returned.
 - filters:
   - `name` - will match the events which name contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
@@ -35,6 +36,10 @@ Every route accepts boolean `probe` parameter, if set to `true` then exception w
 - filters:
   - `name` - will match the events which name contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
   - `type` - will match the events which type contains one of the given substrings. Parameters: `values` - text, accepts multiple values, case-insensitive, `negative`    - boolean, `conjunct` - boolean.  
+
+`http://localhost:8080/eventParents/{book}/{scope}` - returns parent of an event with specified book and scope. Accepts following query parameters:
+- `startTimestamp`
+- `endTimestamp`
 
 ### SSE
 
