@@ -213,9 +213,8 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
             |       GRAPH $EVENT_GRAPH
             |       COLLECT r = event._key INTO results = vertex
             |       RETURN DISTINCT(results[-1])""".trimMargin()
-        return arango.executeAqlQuery(query, Event::class.java)
+        return arango.executeAqlQuery(query, { it != null }, EventResponse::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Events not found by specified parameters") }
-            ?.map { if (it == null) null else EventResponse(it) }
     }
 
     fun getEventChildren(queryParametersMap: Map<String, List<String>>, eventId: String?, offset: Long?, limit: Long?, searchDepth: Long, probe: Boolean): List<String>? {

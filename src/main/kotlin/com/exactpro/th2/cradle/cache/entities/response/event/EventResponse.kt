@@ -36,7 +36,19 @@ data class EventResponse(
     val attachedMessageIds: Set<String>?,
     val body: String?
 ) {
-    constructor(event: Event) : this(event.eventId, event.book, event.scope, event.id, event.batchId, event.isBatched,
-        event.eventName, event.eventType, toInstant(event.startTimestamp), event.endTimestamp?.let { toInstant(it) },
-        event.parentEventId, event.successful, event.attachedMessageIds, event.body)
+    constructor(event: Event) : this(
+        event.eventId,
+        event.book,
+        event.scope,
+        event.id,
+        event.batchId,
+        event.isBatched,
+        event.eventName,
+        event.eventType,
+        toInstant(event.startTimestamp),
+        event.endTimestamp?.let { toInstant(it) },
+        event.parentEventId,
+        event.successful,
+        event.attachedMessageIds, event.body
+    )
 }
