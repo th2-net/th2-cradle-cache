@@ -124,6 +124,11 @@ fun Application.configureRouting(db: Arango, appCtx: Context) {
                 db.getEventParents(book, scope, queryParametersMap, probe)
             }
         }
+        get("/attachedEvents/{id}") {
+            val messageId = call.parameters.getOrFail("id")
+            val probe = call.parameters["probe"]?.toBoolean() ?: false
+            handleRestApiRequest(call, context, rarelyModifiedCacheControl) { db.getAttachedEvents(messageId, probe) }
+        }
     }
 }
 

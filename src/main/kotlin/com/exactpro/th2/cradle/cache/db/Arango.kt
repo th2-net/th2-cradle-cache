@@ -351,6 +351,15 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
         ).ifEmpty { if (probe) null else throw DataNotFoundException("Event's children not found by id: $eventId and with specified query parameters") }
     }
 
+    fun getAttachedEvents(messageId: String, probe: Boolean): List<Event>? {
+        val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
+            |FILTER message._key == $messageId
+            |RETURN message.attachedEventIds
+            """.trimMargin()
+        return arango.executeAqlQuery(query, Event::class.java)
+            .ifEmpty { if (probe) null else throw DataNotFoundException("Message's attachedEventIds not found by id: $messageId") }
+    }
+
     override fun close() {
         arango.close()
     }
