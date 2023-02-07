@@ -353,7 +353,7 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
 
     fun getAttachedEvents(messageId: String, probe: Boolean): List<Event>? {
         val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
-            |FILTER message._key == $messageId
+            |FILTER message._key == "$messageId"
             |RETURN message.attachedEventIds
             """.trimMargin()
         return arango.executeAqlQuery(query, Event::class.java)
