@@ -356,8 +356,9 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
             |FILTER message._key == "$messageId"
             |RETURN message.attachedEventIds
             """.trimMargin()
-        return arango.executeAqlQuery(query, EventResponse::class.java)
+        return arango.executeAqlQuery(query, Event::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Message's attachedEventIds not found by id: $messageId") }
+            ?.map { EventResponse(it) }
     }
 
     override fun close() {
