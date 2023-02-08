@@ -16,7 +16,6 @@
 
 package com.exactpro.th2.cradle.cache.entities.response.messsage
 
-import com.exactpro.th2.cache.common.message.BodyWrapper
 import com.exactpro.th2.cache.common.message.ParsedMessage
 import com.exactpro.th2.cache.common.message.ParsedMessageMetadata
 import com.exactpro.th2.cache.common.toInstant
@@ -32,8 +31,6 @@ data class MessageResponse(
     val subsequence: List<Int>,
     val timestamp: Instant,
     val attachedEventIds: Set<String>,
-    val parsedMessageGroup: List<BodyWrapper>?,
-    val imageType: String?,
     val metadata:ParsedMessageMetadata
 ) {
     constructor(message: ParsedMessage) : this(
@@ -46,8 +43,6 @@ data class MessageResponse(
         message.subsequence,
         toInstant(message.timestamp),
         message.attachedEventIds,
-        message.parsedMessageGroup,
-        message.imageType,
         message.metadata
     )
 }
