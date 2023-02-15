@@ -49,6 +49,7 @@ data class EventResponse(
         event.endTimestamp?.let { toInstant(it) },
         event.parentEventId,
         event.successful,
-        event.attachedMessageIds, event.body
+        event.attachedMessageIds,
+        event.body
     )
 }

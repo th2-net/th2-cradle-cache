@@ -31,6 +31,7 @@ data class MessageResponse(
     val subsequence: List<Int>,
     val timestamp: Instant,
     val attachedEventIds: Set<String>,
+    val body: Map<String, Any>,
     val metadata:ParsedMessageMetadata
 ) {
     constructor(message: ParsedMessage) : this(
@@ -43,6 +44,7 @@ data class MessageResponse(
         message.subsequence,
         toInstant(message.timestamp),
         message.attachedEventIds,
+        message.body,
         message.metadata
     )
 }
