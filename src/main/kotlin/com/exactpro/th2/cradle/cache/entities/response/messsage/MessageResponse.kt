@@ -16,23 +16,35 @@
 
 package com.exactpro.th2.cradle.cache.entities.response.messsage
 
-import com.exactpro.th2.cache.common.message.BodyWrapper
-import com.exactpro.th2.cache.common.message.Message
-import com.exactpro.th2.cache.common.message.MessageMetadata
+import com.exactpro.th2.cache.common.message.ParsedMessage
+import com.exactpro.th2.cache.common.message.ParsedMessageMetadata
 import com.exactpro.th2.cache.common.toInstant
 import java.time.Instant
 
 data class MessageResponse(
     val id: String,
-    val timestamp: Instant,
+    val book: String,
+    val group: String,
     val sessionId: String,
+    val direction: String,
+    val sequence: Long,
+    val subsequence: List<Int>,
+    val timestamp: Instant,
     val attachedEventIds: Set<String>,
-    val parsedMessageGroup: List<BodyWrapper>?,
-    @Suppress("ArrayInDataClass")
-    val rawMessageBody: ByteArray,
-    val imageType: String?,
-    val metadata: MessageMetadata
+    val body: Map<String, Any>,
+    val metadata:ParsedMessageMetadata
 ) {
-    constructor(message: Message) : this(message.id, toInstant(message.timestamp), message.sessionId, message.attachedEventIds,
-        message.parsedMessageGroup, message.rawMessageBody, message.imageType, message.metadata)
+    constructor(message: ParsedMessage) : this(
+        message.id,
+        message.book,
+        message.group,
+        message.sessionAlias,
+        message.direction,
+        message.sequence,
+        message.subsequence,
+        toInstant(message.timestamp),
+        message.attachedEventIds,
+        message.body,
+        message.metadata
+    )
 }

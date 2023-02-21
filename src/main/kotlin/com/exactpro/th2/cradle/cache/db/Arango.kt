@@ -213,9 +213,9 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
             |       GRAPH $EVENT_GRAPH
             |       COLLECT r = event._key INTO results = vertex
             |       RETURN DISTINCT(results[-1])""".trimMargin()
-        return arango.executeAqlQuery(query, Event::class.java)
+        return arango.executeAqlQuery(query, { it != null }, Event::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Events not found by specified parameters") }
-            ?.map { if (it == null) null else EventResponse(it) }
+            ?.map { EventResponse(it) }
     }
 
     fun getEventChildren(queryParametersMap: Map<String, List<String>>, eventId: String?, offset: Long?, limit: Long?, searchDepth: Long, probe: Boolean): List<String>? {
@@ -349,6 +349,15 @@ class Arango(credentials: ArangoCredentials) : AutoCloseable {
             query,
             String::class.java
         ).ifEmpty { if (probe) null else throw DataNotFoundException("Event's children not found by id: $eventId and with specified query parameters") }
+    }
+
+    fun getAttachedEvents(messageId: String, probe: Boolean): List<String>? {
+        val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
+            |FILTER message._key == "$messageId"
+            |RETURN message.attachedEventIds
+            """.trimMargin()
+        return arango.executeAqlQuery(query, String::class.java)
+            .ifEmpty { if (probe) null else throw DataNotFoundException("Message's attachedEventIds not found by id: $messageId") }
     }
 
     override fun close() {
