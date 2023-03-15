@@ -20,15 +20,13 @@ import com.exactpro.th2.cache.common.Arango
 import com.exactpro.th2.cache.common.Arango.Companion.EVENT_COLLECTION
 import com.exactpro.th2.cache.common.Arango.Companion.EVENT_GRAPH
 import com.exactpro.th2.cache.common.Arango.Companion.PARSED_MESSAGE_COLLECTION
-import com.exactpro.th2.cache.common.ArangoCredentials
 import com.exactpro.th2.cache.common.event.Event
 import com.exactpro.th2.cradle.cache.entities.exceptions.DataNotFoundException
 import com.exactpro.th2.cradle.cache.entities.exceptions.InvalidRequestException
 import com.exactpro.th2.cradle.cache.entities.response.event.EventResponse
 import java.util.function.Consumer
 
-class Arango(credentials: ArangoCredentials) : AutoCloseable {
-    val arango: Arango = Arango(credentials)
+class Arango(val arango: Arango) : AutoCloseable {
 
     fun getMessage(messageId: String, probe: Boolean): String? {
         val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
