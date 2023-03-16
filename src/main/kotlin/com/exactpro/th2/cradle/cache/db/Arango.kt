@@ -42,7 +42,7 @@ class Arango(val arango: Arango) : AutoCloseable {
         val query = """FOR message IN $PARSED_MESSAGE_COLLECTION
             |FILTER message._key == "$messageId"
             |LIMIT 1
-            |RETURN message.message""".trimMargin()
+            |RETURN message.body""".trimMargin()
         return arango.executeAqlQuery(query, String::class.java)
             .ifEmpty { if (probe) null else throw DataNotFoundException("Message not found by id: $messageId") }
             ?.first()

@@ -102,4 +102,40 @@ internal class ArangoTest {
         verify { arango.arango.executeAqlQuery(capture(query), Event::class.java) }
         assertEquals(expected, query.captured)
     }
+
+    @Test
+    fun `check 'search'sse'messages works properly`() {
+        val expected = """FOR message IN parsed_messages
+            |FILTER message.timestamp >= 1000 AND message.timestamp <= 2000 AND message.alias IN ["session-1"]
+            |LIMIT 20, 10
+            |RETURN message
+            """.trimMargin()
+
+        val parametersMap = mapOf(
+            "start-timestamp" to listOf("1000"),
+            "end-timestamp" to listOf("2000"),
+            "page-size" to listOf("10"),
+            "page-number" to listOf("3")
+        )
+        val sessions = listOf("session-1")
+        arango.searchMessages(parametersMap, sessions, true) { }
+
+        val query = slot<String>()
+        verify { arango.arango.executeAqlQuery(capture(query), String::class.java, any()) }
+        assertEquals(expected, query.captured)
+    }
+
+    @Test
+    fun `check 'messageBody'{id} works properly`() {
+        val expexted = """FOR message IN parsed_messages
+            |FILTER message._key == "id"
+            |LIMIT 1
+            |RETURN message.body""".trimMargin()
+
+        arango.getMessageBody("id", true)
+
+        val query = slot<String>()
+        verify { arango.arango.executeAqlQuery(capture(query), String::class.java) }
+        assertEquals(expexted, query.captured)
+    }
 }
