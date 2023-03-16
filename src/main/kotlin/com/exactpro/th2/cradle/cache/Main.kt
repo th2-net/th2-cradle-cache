@@ -45,7 +45,7 @@ class Main(args: Array<String>) {
         configurationFactory = CommonFactory.createFromArguments(*args)
         resources += configurationFactory
         val configuration = configurationFactory.getCustomConfiguration(Configuration::class.java)
-        val arango = Arango(configuration.arangoCredentials)
+        val arango = Arango(com.exactpro.th2.cache.common.Arango(configuration.arangoCredentials))
         resources += arango
         context = Context(
             configuration,
